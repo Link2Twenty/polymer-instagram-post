@@ -6,6 +6,9 @@
       :host {
         display: block;
       }
+      :host([hidden]) {
+        display: none;
+      }
       .instagram-post {
         background:#FFF;
         border:0;
@@ -154,32 +157,32 @@
     <blockquote class="instagram-post">
       <div class="instagram-header">
         <a class="instagram-avatar" href$=[[authorUrl]] target="_blank">
-          <img src$=[[authorAvatar]] alt$=[[authorId]]>
+          <img src$=[[_instaObject.authorAvatar]] alt$=[[_instaObject.authorId]]>
         </a>
         <a class="instagram-username" href$=[[authorUrl]] target="_blank">
-          [[authorId]]
+          [[_instaObject.authorId]]
         </a>
-        <span class="instagram-verified" hidden$=[[!verified]]>
+        <span class="instagram-verified" hidden$=[[!_instaObject.verified]]>
         </span>
       </div>
       <div class="instagram-textcontent">
-        <div hidden$=[[!loaded]]>
+        <div hidden$=[[!_instaObject.loaded]]>
           <a href$=[[instagramUrl]]>
-            <img class="instagram-image" hidden$=[[isvideo]] src$=[[imgSrc]]>
-            <video width="100%" autoplay poster="[[imgSrc]]" preload="none" src="[[videosrc]]" type="video/mp4"></video>
+            <img class="instagram-image" hidden$=[[isvideo]] src$=[[_instaObject.imgSrc]]>
+            <video width="100%" autoplay poster="[[_instaObject.imgSrc]]" preload="none" src="[[videosrc]]" type="video/mp4"></video>
           </a>
         </div>
-        <div class="instagram-temp" hidden$=[[loaded]]>
+        <div class="instagram-temp" hidden$=[[_instaObject.loaded]]>
           <div class="instagram-logo"></div>
         </div>
-        <p class="instagram-textbox" hidden$=[[!loaded]]>
-          <a class="instagram-text bolded" href$=[[instagramUrl]] target="_blank">[[likes]] likes</a>
+        <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
+          <a class="instagram-text bolded" href$=[[instagramUrl]] target="_blank">[[_instaObject.likes]] likes</a>
         </p>
-        <p class="instagram-textbox" hidden$=[[!loaded]]>
-          <a href$=[[authorUrl]] class="instagram-author" target="_blank">[[authorId]]</a> <a class="instagram-text" href$=[[instagramUrl]] target="_blank">[[instagramText]]</a>
+        <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
+          <a href$=[[authorUrl]] class="instagram-author" target="_blank">[[_instaObject.authorId]]</a> <a class="instagram-text" href$=[[instagramUrl]] target="_blank">[[_instaObject.instagramText]]</a>
         </p>
-        <p class="instagram-textbox" hidden$=[[!loaded]]>
-          <a class="instagram-text gray" href$=[[instagramUrl]] target="_blank">view all [[comments]] comments</a>
+        <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
+          <a class="instagram-text gray" href$=[[instagramUrl]] target="_blank">view all [[_instaObject.comments]] comments</a>
         </p>
       </div>
       <div class="instagram-footer">
@@ -208,9 +211,6 @@
           postid: {
             type: String
           },
-          imgSrc: {
-            type: String
-          },
           instagramUrl: {
             type: String,
             computed: '_buildUrl(postid)',
@@ -218,52 +218,20 @@
           },
           authorUrl: {
             type: String,
-            computed: '_computeAuthorUrl(authorId)'
-          },
-          authorName: {
-            type: String
-          },
-          authorId: {
-            type: String
-          },
-          authorAvatar: {
-            type: String
-          },
-          instagramText: {
-            type: String
-          },
-          likes: {
-            type: String
-          },
-          comments: {
-            type: String
-          },
-          timestamp: {
-            type: Number
+            computed: '_computeAuthorUrl(_instaObject.authorId)'
           },
           humanDate: {
             type: String,
-            computed: '_computeHumanDate(timestamp)'
-          },
-          verified: {
-            type: Boolean,
-            value: false
-          },
-          typename: {
-            type: String
+            computed: '_computeHumanDate(_instaObject.timestamp)'
           },
           isvideo: {
             type: Boolean,
             value: false,
-            computed: '_computeIsVideo(typename)'
+            computed: '_computeIsVideo(_instaObject.typename)'
           },
-          videosrc: {
-            type: String
+          _instaObject: {
+            type: Object
           },
-          loaded: {
-            type: Boolean,
-            value: false
-          }
         };
       }
 
@@ -292,18 +260,18 @@
           if (e.target.status == 200) {
             let responseObj = JSON.parse(e.target.response);
             let graphql = responseObj.graphql.shortcode_media;
-            this.set('imgSrc', graphql.display_url);
-            this.set('videosrc', graphql.video_url);
-            this.set('typename', graphql.__typename);
-            this.set('instagramText', graphql.edge_media_to_caption.edges[0].node.text);
-            this.set('authorId', graphql.owner.username);
-            this.set('authorName', graphql.owner.full_name);
-            this.set('timestamp', graphql.taken_at_timestamp);
-            this.set('authorAvatar', graphql.owner.profile_pic_url);
-            this.set('likes', graphql.edge_media_preview_like.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-            this.set('comments', graphql.edge_media_to_comment.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-            this.set('verified', graphql.owner.is_verified);
-            this.set('loaded', true);
+            this.set('_instaObject.imgSrc', graphql.display_url);
+            this.set('_instaObject.videosrc', graphql.video_url);
+            this.set('_instaObject.typename', graphql.__typename);
+            this.set('_instaObject.instagramText', graphql.edge_media_to_caption.edges[0].node.text);
+            this.set('_instaObject.authorId', graphql.owner.username);
+            this.set('_instaObject.authorName', graphql.owner.full_name);
+            this.set('_instaObject.timestamp', graphql.taken_at_timestamp);
+            this.set('_instaObject.authorAvatar', graphql.owner.profile_pic_url);
+            this.set('_instaObject.likes', graphql.edge_media_preview_like.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+            this.set('_instaObject.comments', graphql.edge_media_to_comment.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+            this.set('_instaObject.verified', graphql.owner.is_verified);
+            this.set('_instaObject.loaded', true);
           }
         });
         xhr.open("GET", "https://cors.io/?" + this.instagramUrl + "/?__a=1");
