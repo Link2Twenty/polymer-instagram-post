@@ -156,10 +156,10 @@
 
     <blockquote class="instagram-post">
       <div class="instagram-header">
-        <a class="instagram-avatar" href$=[[authorUrl]] target="_blank">
+        <a class="instagram-avatar" href$=[[_authorUrl]] target="_blank">
           <img src$=[[_instaObject.authorAvatar]] alt$=[[_instaObject.authorId]]>
         </a>
-        <a class="instagram-username" href$=[[authorUrl]] target="_blank">
+        <a class="instagram-username" href$=[[_authorUrl]] target="_blank">
           [[_instaObject.authorId]]
         </a>
         <span class="instagram-verified" hidden$=[[!_instaObject.verified]]>
@@ -167,26 +167,26 @@
       </div>
       <div class="instagram-textcontent">
         <div hidden$=[[!_instaObject.loaded]]>
-          <a href$=[[instagramUrl]]>
-            <img class="instagram-image" hidden$=[[isvideo]] src$=[[_instaObject.imgSrc]]>
-            <video width="100%" autoplay hidden$=[[!isvideo]] poster="[[_instaObject.imgSrc]]" preload="none" src="[[_instaObject.videosrc]]" type="video/mp4"></video>
+          <a href$=[[_instagramUrl]]>
+            <img class="instagram-image" hidden$=[[_isvideo]] src$=[[_instaObject.imgSrc]]>
+            <video width="100%" autoplay hidden$=[[!_isvideo]] poster="[[_instaObject.imgSrc]]" preload="none" src="[[_instaObject.videosrc]]" type="video/mp4"></video>
           </a>
         </div>
         <div class="instagram-temp" hidden$=[[_instaObject.loaded]]>
           <div class="instagram-logo"></div>
         </div>
         <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
-          <a class="instagram-text bolded" href$=[[instagramUrl]] target="_blank">[[_instaObject.likes]] likes</a>
+          <a class="instagram-text bolded" href$=[[_instagramUrl]] target="_blank">[[_instaObject.likes]] likes</a>
         </p>
         <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
-          <a href$=[[authorUrl]] class="instagram-author" target="_blank">[[_instaObject.authorId]]</a> <a class="instagram-text" href$=[[instagramUrl]] target="_blank">[[_instaObject.instagramText]]</a>
+          <a href$=[[_authorUrl]] class="instagram-author" target="_blank">[[_instaObject.authorId]]</a> <a class="instagram-text" href$=[[_instagramUrl]] target="_blank">[[_instaObject.instagramText]]</a>
         </p>
         <p class="instagram-textbox" hidden$=[[!_instaObject.loaded]]>
-          <a class="instagram-text gray" href$=[[instagramUrl]] target="_blank">view all [[_instaObject.comments]] comments</a>
+          <a class="instagram-text gray" href$=[[_instagramUrl]] target="_blank">view all [[_instaObject.comments]] comments</a>
         </p>
       </div>
       <div class="instagram-footer">
-        <a class="instagram-time gray" href="#">[[humanDate]]</a>
+        <a class="instagram-time gray" href="#">[[_humanDate]]</a>
         <span class="instagram-glyph"></span>
       </div>
       </blockquote>
@@ -205,41 +205,78 @@
       static get is() { return 'instagram-post'; }
       static get properties() {
         return {
+          /**
+          * postid: ID of instagram post
+          * @type {String}
+          */
           postid: {
             type: String
           },
-          instagramUrl: {
+          /**
+          * _authorUrl: Computed URL for Author
+          * @type {String}
+          */
+          _authorUrl: {
+            type: String,
+            computed: '_computeAuthorUrl(_instaObject.authorId)'
+          },
+          /**
+          * _humanDate: Computed Human readable date
+          * @type {String}
+          */
+          _humanDate: {
+            type: String,
+            computed: '_computeHumanDate(_instaObject.timestamp)'
+          },
+          /**
+          * _instagramUrl: Computed URL of instagram post
+          * @type {String}
+          */
+          _instagramUrl: {
             type: String,
             computed: '_buildUrl(postid)',
             observer: '_getInstagramAPI'
           },
-          authorUrl: {
-            type: String,
-            computed: '_computeAuthorUrl(_instaObject.authorId)'
-          },
-          humanDate: {
-            type: String,
-            computed: '_computeHumanDate(_instaObject.timestamp)'
-          },
-          isvideo: {
-            type: Boolean,
-            value: false,
-            computed: '_computeIsVideo(_instaObject.typename)'
-          },
+          /**
+          * _instaObject: Container for post details
+          * @type {Object}
+          */
           _instaObject: {
             type: Object,
             value: {}
           },
+          /**
+          * _isvideo: Container for video flag
+          * @type {Boolean}
+          */
+          _isvideo: {
+            type: Boolean,
+            value: false,
+            computed: '_computeIsVideo(_instaObject.typename)'
+          },
         };
       }
-
+      /**
+      * _buildUrl: Builds URL for _instagramUrl
+      */
+      _buildUrl(postid) {
+        if(!postid)
+          return;
+        
+        return 'https://www.instagram.com/p/' + postid;
+      }
+      /**
+      * _computeAuthorUrl: Builds URL for _authorUrl
+      */
       _computeAuthorUrl(authorId) {
         if(!authorId)
           return;
           
         return 'https://www.instagram.com/' + authorId;
       }
-
+      /**
+      * _computeHumanDate: Returns human readable date for _humanDate
+      */      
       _computeHumanDate(timestamp) {
         if(!timestamp)
           return;
@@ -253,6 +290,9 @@
           return postDate.toLocaleDateString("en-US",options)
         }
       }
+      /**
+      * _computeIsVideo: Returns boolean for _isvideo
+      */
       _computeIsVideo(typename) {
         if(!typename)
           return;
@@ -260,8 +300,10 @@
         if (typename == 'GraphVideo') return true
         else return false
       }
-
-      _getInstagramAPI(instagramUrl) {
+      /**
+      * _getInstagramAPI: XMLHttpRequest to get instagram data
+      */
+      _getInstagramAPI(_instagramUrl) {
         var xhr = new XMLHttpRequest();
         xhr.addEventListener("load", (e) => {
           if (e.target.status == 200) {
@@ -281,15 +323,8 @@
             this.set('_instaObject.loaded', true);
           }
         });
-        xhr.open("GET", "https://cors.io/?" + this.instagramUrl + "/?__a=1");
+        xhr.open("GET", "https://cors.io/?" + this._instagramUrl + "/?__a=1");
         xhr.send();
-      }
-
-      _buildUrl(postid) {
-        if(!postid)
-          return;
-        
-        return 'https://www.instagram.com/p/' + postid;
       }
     }
 
