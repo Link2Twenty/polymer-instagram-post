@@ -205,9 +205,6 @@
       static get is() { return 'instagram-post'; }
       static get properties() {
         return {
-          ajaxResponse: {
-            type: Object
-          },
           postid: {
             type: String
           },
@@ -230,7 +227,8 @@
             computed: '_computeIsVideo(_instaObject.typename)'
           },
           _instaObject: {
-            type: Object
+            type: Object,
+            value: {}
           },
         };
       }
@@ -260,18 +258,18 @@
           if (e.target.status == 200) {
             let responseObj = JSON.parse(e.target.response);
             let graphql = responseObj.graphql.shortcode_media;
-            this.set('_instaObject.imgSrc', graphql.display_url);
-            this.set('_instaObject.videosrc', graphql.video_url);
-            this.set('_instaObject.typename', graphql.__typename);
-            this.set('_instaObject.instagramText', graphql.edge_media_to_caption.edges[0].node.text);
-            this.set('_instaObject.authorId', graphql.owner.username);
-            this.set('_instaObject.authorName', graphql.owner.full_name);
-            this.set('_instaObject.timestamp', graphql.taken_at_timestamp);
-            this.set('_instaObject.authorAvatar', graphql.owner.profile_pic_url);
-            this.set('_instaObject.likes', graphql.edge_media_preview_like.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-            this.set('_instaObject.comments', graphql.edge_media_to_comment.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-            this.set('_instaObject.verified', graphql.owner.is_verified);
-            this.set('_instaObject.loaded', true);
+            this._instaObject.imgSrc = graphql.display_url;
+            this._instaObject.videosrc = graphql.video_url;
+            this._instaObject.typename = graphql.__typename;
+            this._instaObject.instagramText = graphql.edge_media_to_caption.edges[0].node.text;
+            this._instaObject.authorId = graphql.owner.username;
+            this._instaObject.authorName = graphql.owner.full_name;
+            this._instaObject.timestamp = graphql.taken_at_timestamp;
+            this._instaObject.authorAvatar = graphql.owner.profile_pic_url;
+            this._instaObject.likes = graphql.edge_media_preview_like.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            this._instaObject.comments = graphql.edge_media_to_comment.count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            this._instaObject.verified = graphql.owner.is_verified;
+            this._instaObject.loaded = true;
           }
         });
         xhr.open("GET", "https://cors.io/?" + this.instagramUrl + "/?__a=1");
