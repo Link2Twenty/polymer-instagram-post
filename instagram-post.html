@@ -234,10 +234,16 @@
       }
 
       _computeAuthorUrl(authorId) {
+        if(!authorId)
+          return;
+          
         return 'https://www.instagram.com/' + authorId;
       }
 
       _computeHumanDate(timestamp) {
+        if(!timestamp)
+          return;
+        
         let postDate = new Date(timestamp*1000);
         let elapsedTime = new Date() - postDate
         if ( elapsedTime < 84400000*7) {
@@ -248,6 +254,9 @@
         }
       }
       _computeIsVideo(typename) {
+        if(!typename)
+          return;
+        
         if (typename == 'GraphVideo') return true
         else return false
       }
@@ -277,11 +286,10 @@
       }
 
       _buildUrl(postid) {
+        if(!postid)
+          return;
+        
         return 'https://www.instagram.com/p/' + postid;
-      }
-
-      connectedCallback() {
-        super.connectedCallback();
       }
     }
 
